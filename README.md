@@ -1,3 +1,12 @@
+Data stucture for task:
+struct task{
+	char tId[5];
+	unsigned int tPeriod;
+	unsigned int tWCET;
+	unsigned int tPriority;
+	unsigned int tWaitTime; (for calculating the waiting time of a task later on)
+}
+
 Pseudocode Shortest Job First:
 
 open the file
