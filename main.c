@@ -26,6 +26,7 @@ void calculateWaitTime(TASK *task, int size){
 }
 
 void shortestJobFirst(TASK *task, int size){
+	printf("Sorting faster task to be executed first\n");
 	for (int i = 0; i < size - 1; i++){
 		for (int j = i; j < size; j++){
 			if (task[i].tWCET > task[j].tWCET){
@@ -33,9 +34,11 @@ void shortestJobFirst(TASK *task, int size){
 			}
 		}
 	}
+	printf("Sort complete\n");
 }
 
 double averageWaitTime(TASK *task, int size){
+	printf("Calculating average wait time... \n");
 	double sum = 0;
 	for(int i = 0; i < size; i++){
 		for(int j = i-1; j >= 0; j--){
@@ -46,6 +49,7 @@ double averageWaitTime(TASK *task, int size){
 }
 
 double averageTurnAroundTime(TASK *task, int size){
+	printf("Calculating average turnaround time... \n");
 	double turnAroundTime;
 	for(int i = 0; i < size; i++){
 		turnAroundTime += task[i].tWCET + task[i].tWaitTime; 
@@ -55,8 +59,10 @@ double averageTurnAroundTime(TASK *task, int size){
 }
 
 void printTask(TASK *task, int size){
+	printf("The order of execution of the given task list is: \n");
+	printf("Task ID \t Task Worst Case Execution Time \t Task Wait Time\n");
 	for(int i = 0; i < size; i++){
-		printf("%s %d %d %d %d\n", task[i].tID, task[i].tPeriod, task[i].tWCET, task[i].tPriority, task[i].tWaitTime);
+		printf("%s \t\t %d \t\t\t\t\t %d \n", task[i].tID, task[i].tWCET, task[i].tWaitTime);
 	}	
 }
 
@@ -76,7 +82,6 @@ int main(){
 		line++;
 	}
 
-	printf("Number of lines: %d\n", line);
 
 	TASK * list = malloc(line * sizeof * list);
 	
@@ -97,21 +102,26 @@ int main(){
 		i++;
 	}
 
-	printf("Read complete\n");
+	printf("Read File complete\n");
+
+	printf("Number of tasks: %d\n", line);
+
+	printf("Case study: ");
+	printf("Read the list of tasks from a text file and schedule it with Shortest Job First Algorithm\n");
+	printf("Assuming that all the tasks arrive at the same time\n");
 
 	//sort the task in order of execution time
 	shortestJobFirst(list, line);
 
-	printf("Sort complete\n");
 
 	//calculate each task's wait time
 	calculateWaitTime(list, line);
 
 	//average wait time
-	printf("%f\n",averageWaitTime(list, line));
+	printf("%.2f\n",averageWaitTime(list, line));
 
 	//avaerage turn around time
-	printf("%f\n",averageTurnAroundTime(list, line));
+	printf("%.2f\n",averageTurnAroundTime(list, line));
 
 	printTask(list, line);
 
