@@ -16,9 +16,10 @@ typedef struct node{
 }LIST;
 
 LIST *head;
+LIST *tail;
 
 void initList(){
-	head = NULL;
+	head = tail = NULL;
 }
 
 void add(TASK task){
@@ -26,9 +27,17 @@ void add(TASK task){
 	newNode = malloc(sizeof(LIST));
 	newNode -> t = task;
 	if(head == NULL){
-		head = newNode;
+		head = tail = newNode;
+	}else{
+		tail->next = newNode;
+		tail = newNode;
+		tail->next = NULL;
 	}
-	newNode -> next = NULL;
+	
+}
+
+void showTask(TASK task){
+	printf("%s\t%d\t%d\t%d\t%d\n", task.tID, task.tPeriod, task.tWCET, task.tPriority, task.tWaitTime);
 }
 
 void addTask(char * buffer){
@@ -47,10 +56,7 @@ void addTask(char * buffer){
 	add(task);
 }
 
-void showTask(TASK task){
-	printf("%s\t%d\t%d\t%d\t%d\n", task.tID, task.tPeriod, task.tWCET, task.tPriority, task.tWaitTime);
-}
-
+//has problem here
 void showList(){
 	LIST *conductor;
 	conductor = head;
