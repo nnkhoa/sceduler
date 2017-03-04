@@ -11,7 +11,7 @@ typedef struct{
 }TASK;
 
 typedef struct node{
-	TASK t;
+	TASK task;
 	struct node *next;
 }LIST;
 
@@ -25,13 +25,13 @@ void initList(){
 void add(TASK task){
 	LIST *newNode;
 	newNode = malloc(sizeof(LIST));
-	newNode -> t = task;
+	newNode -> task = task;
 	if(head == NULL){
 		head = tail = newNode;
 	}else{
-		tail->next = newNode;
+		tail -> next = newNode;
 		tail = newNode;
-		tail->next = NULL;
+		tail -> next = NULL;
 	}
 	
 }
@@ -56,13 +56,12 @@ void addTask(char * buffer){
 	add(task);
 }
 
-//has problem here
 void showList(){
 	LIST *conductor;
 	conductor = head;
 	while(conductor != NULL){
-		showTask(conductor->t);
-		conductor = conductor->next;
+		showTask(conductor -> task);
+		conductor = conductor -> next;
 	}
 }
 
@@ -78,8 +77,46 @@ void readFile(char *filename){
 
 }
 
+void swapNodeData(LIST *node1, LIST *node2){
+	TASK temp = node1 -> task;
+	node1 -> task = node2 -> task;
+	node2 -> task = temp;
+}
+
+void shortestJobFirst(){
+	LIST *pointer_1;
+	LIST *pointer_2;
+	pointer_1 = head;
+	while(pointer_1 != NULL){
+		pointer_2 = pointer_1 -> next;
+		while(pointer_2 != NULL){
+			if(pointer_2 -> task.tWCET < pointer_1 -> task.tWCET){
+				swapNodeData(pointer_1, pointer_2);
+			}
+			pointer_2 = pointer_2 -> next;
+		}
+		pointer_1 = pointer_1 -> next;
+	}
+}
+
+void calculateWaitTime(){
+	LIST *pointer_1;
+	LIST *pointer_2;
+	pointer_1 = head;
+	while(pointer_1 != NULL){
+		pointer_2 = pointer_1 -> next;
+		while(pointer_2 != NULL){
+			pointer_2 -> task.tWaitTime += pointer_1 -> task.tWCET; 
+			pointer_2 = pointer_2 -> next;
+		}
+		pointer_1 = pointer_1 -> next;
+	}
+}
+
 int main(){
 	readFile("input.txt");
+	shortestJobFirst();
+	calculateWaitTime();
 	showList();
 	return 0;
 }
