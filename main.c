@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct{
 	char tID[5];
@@ -39,13 +40,15 @@ void addTask(char * buffer){
 
 	sscanf(buffer, "%s %d %d %d", tID, &tPeriod, &tWCET, &tPriority);
 
-	TASK task = {tID, tPeriod, tWCET, tPriority, 0};
+	TASK task = {{NULL}, tPeriod, tWCET, tPriority, 0};
+
+	strcpy(task.tID, tID);
 
 	add(task);
 }
 
 void showTask(TASK task){
-	printf("%s\t%d\t%d\t%d\t%d\n", task.tID, &task.tPeriod, &task.tWCET, &task.tPriority, &task.tWaitTime);
+	printf("%s\t%d\t%d\t%d\t%d\n", task.tID, task.tPeriod, task.tWCET, task.tPriority, task.tWaitTime);
 }
 
 void showList(){
