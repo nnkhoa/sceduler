@@ -1,2 +1,4 @@
 *.o
 main
+main_old.c
+Note.txt
