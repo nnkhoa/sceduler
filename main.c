@@ -63,6 +63,66 @@ void addTask(char * buffer){
 	add(task);
 }
 
+void insertIntoList(LIST *conductor, TASK task){
+	LIST *newNode;
+	newNode = malloc(sizeof(LIST));
+
+	if(conductor == head){
+		newNode -> task = head -> task;
+		head -> task = task;
+		newNode -> next = head -> next;
+		head -> next = newNode;
+	}else{
+		LIST *previousNode;
+		previousNode = head;
+		while(previousNode != NULL){
+			if(previousNode -> next == conductor){
+				newNode -> task = task;
+				newNode -> next = conductor;
+				previousNode -> next = newNode;
+				break;
+			}
+			previousNode = previousNode -> next;
+		}
+	}
+}
+
+void addTaskSJF(char * buffer){
+	char tID[5];
+	unsigned int tPeriod;
+	unsigned int tWCET;
+	unsigned int tPriority;
+
+	// int added = 0;
+
+	sscanf(buffer, "%s %d %d %d", tID, &tPeriod, &tWCET, &tPriority);
+
+	TASK task = {{NULL}, tPeriod, tWCET, tPriority, 0};
+	strcpy(task.tID, tID);
+
+	LIST *conductor;
+	
+	if(head == NULL){
+		add(task);
+		conductor = head;	
+		// added = 1;
+	}else{
+		conductor = head;
+		while(conductor != NULL){
+			if(conductor -> task.tWCET > task.tWCET){
+				insertIntoList(conductor, task);
+				// added = 1;
+				break;
+			}
+			conductor = conductor -> next;
+		}
+	}
+	if(conductor == NULL	){
+		add(task);
+	}
+
+}
+
 //show the list of task
 void showList(LIST *_head){
 	LIST *conductor;
@@ -111,25 +171,6 @@ void shortestJobFirst(){
 		}
 		pointer_1 = pointer_1 -> next;
 	}
-}
-
-//Shortest Job First scheduling algorithm with task period taken into consideration
-void sJFWithPeriod(){
-	LIST *pointer_1;
-	LIST *pointer_2;
-	pointer_1 = head;
-
-	pointer_2 = pointer_1 -> next;
-
-	//put the 1st arrived task to the top of the list
-	while(pointer_2 != NULL){
-		if(pointer_2 -> task.tPeriod < pointer_1 -> task.tPeriod){
-			swapNodeData(pointer_2, pointer_1);
-		}
-	}
-
-	pointer_1 = pointer_1 -> next;
-	pointer_2 = pointer_1 -> next;
 }
 
 //calculate the wait time of each task after scheduling
@@ -186,7 +227,7 @@ void sortListByTaskName(LIST *_head){
 int main(){
 	readFile("input.txt");
 
-	shortestJobFirst();
+	// shortestJobFirst();
 
 	calculateWaitTime();
 	
