@@ -56,7 +56,7 @@ void addTask(char * buffer){
 
 	sscanf(buffer, "%s %d %d %d", tID, &tPeriod, &tWCET, &tPriority);
 
-	TASK task = {{NULL}, tPeriod, tWCET, tPriority, 0};
+	TASK task = {{0}, tPeriod, tWCET, tPriority, 0};
 
 	strcpy(task.tID, tID);
 
@@ -97,7 +97,7 @@ void addTaskSJF(char * buffer){
 
 	sscanf(buffer, "%s %d %d %d", tID, &tPeriod, &tWCET, &tPriority);
 
-	TASK task = {{NULL}, tPeriod, tWCET, tPriority, 0};
+	TASK task = {{0}, tPeriod, tWCET, tPriority, 0};
 	strcpy(task.tID, tID);
 
 	LIST *conductor;
