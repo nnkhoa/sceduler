@@ -227,7 +227,7 @@ void sortListByTaskName(LIST *_head){
 int main(){
 	readFile("input.txt");
 
-	// shortestJobFirst();
+	shortestJobFirst();
 
 	calculateWaitTime();
 	
