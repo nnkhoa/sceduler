@@ -3,13 +3,13 @@
 #include <string.h>
 
 int const ATTR_NONE = 0;
-int const ATTR_PERIOD = 1;
+int const ATTR_ARRIVALTIME = 1;
 int const ATTR_WCET = 2;
 
 //defining the TASK data structure
 typedef struct{
 	char tID[5];
-	unsigned int tPeriod;
+	unsigned int tArrivalTime;
 	unsigned int tWCET;
 	unsigned int tPriority;
 	unsigned int tWaitTime;
@@ -48,7 +48,7 @@ void add(TASK task){
 
 //show task
 void showTask(TASK task){
-	printf("%s\t\t%d\t\t%d\t\t%d\t\t%d\n", task.tID, task.tPeriod, task.tWCET, task.tPriority, task.tWaitTime);
+	printf("%s\t\t%d\t\t%d\t\t%d\t\t%d\n", task.tID, task.tArrivalTime, task.tWCET, task.tPriority, task.tWaitTime);
 }
 
 //show the list of task
@@ -64,13 +64,13 @@ void showList(LIST *_head){
 //add a task based on a formatted buffer string
 void addTask(char * buffer){
 	char tID[5];
-	unsigned int tPeriod;
+	unsigned int tArrivalTime;
 	unsigned int tWCET;
 	unsigned int tPriority;
 
-	sscanf(buffer, "%s %d %d %d", tID, &tPeriod, &tWCET, &tPriority);
+	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
 
-	TASK task = {{0}, tPeriod, tWCET, tPriority, 0};
+	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0};
 
 	strcpy(task.tID, tID);
 
@@ -119,13 +119,13 @@ void insertIntoList(LIST *conductor, TASK task){
 //prototype for add task and sort by its designated attr
 void addTaskSortByAttr(char * buffer, int attr){
 	char tID[5];
-	unsigned int tPeriod;
+	unsigned int tArrivalTime;
 	unsigned int tWCET;
 	unsigned int tPriority;
 
-	sscanf(buffer, "%s %d %d %d", tID, &tPeriod, &tWCET, &tPriority);
+	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
 
-	TASK task = {{0}, tPeriod, tWCET, tPriority, 0};
+	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0};
 	strcpy(task.tID, tID);
 
 	LIST *conductor;
@@ -144,7 +144,7 @@ void addTaskSortByAttr(char * buffer, int attr){
 			}else{
 				conductor = head;
 				while(conductor != NULL){
-					if(conductor -> task.tPeriod > task.tPeriod){
+					if(conductor -> task.tArrivalTime > task.tArrivalTime){
 						insertIntoList(conductor, task);
 						break;
 					}
@@ -180,13 +180,13 @@ void addTaskSortByAttr(char * buffer, int attr){
 //add task and add specifically for SJF
 void addTaskSJF(char * buffer){
 	char tID[5];
-	unsigned int tPeriod;
+	unsigned int tArrivalTime;
 	unsigned int tWCET;
 	unsigned int tPriority;
 
-	sscanf(buffer, "%s %d %d %d", tID, &tPeriod, &tWCET, &tPriority);
+	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
 
-	TASK task = {{0}, tPeriod, tWCET, tPriority, 0};
+	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0};
 	strcpy(task.tID, tID);
 
 	LIST *conductor;
@@ -340,7 +340,7 @@ void resetList(){
 }
 
 int main(){
-	readFilePrototype("input.txt", ATTR_PERIOD);
+	readFilePrototype("input.txt", ATTR_ARRIVALTIME);
 
 	// shortestJobFirst();
 
