@@ -3,7 +3,7 @@
 #include <string.h>
 
 int const ATTR_NONE = 0;
-int const ATTR_PRIORITY = 1;
+int const ATTR_PERIOD = 1;
 int const ATTR_WCET = 2;
 
 //defining the TASK data structure
@@ -133,15 +133,18 @@ void addTaskSortByAttr(char * buffer, int attr){
 	//use switch case
 	switch(attr){
 		case 0:
+			printf("Case no attribute\n");
 			add(task);
+			break;
 		case 1:
+			printf("Case period attribute\n");
 			if(head == NULL){
 				add(task);
 				conductor = head;
 			}else{
 				conductor = head;
 				while(conductor != NULL){
-					if(conductor -> task.tPriority > task.tPriority){
+					if(conductor -> task.tPeriod > task.tPeriod){
 						insertIntoList(conductor, task);
 						break;
 					}
@@ -151,7 +154,9 @@ void addTaskSortByAttr(char * buffer, int attr){
 			if(conductor == NULL){
 				add(task);
 			}
+			break;
 		case 2:
+			printf("Case WCET attribute\n");
 			if(head == NULL){
 				add(task);
 				conductor = head;
@@ -167,7 +172,8 @@ void addTaskSortByAttr(char * buffer, int attr){
 			}
 			if(conductor == NULL){
 				add(task);
-			}					
+			}
+			break;					
 	}
 }
 
@@ -334,7 +340,7 @@ void resetList(){
 }
 
 int main(){
-	readFilePrototype("input.txt", 1);
+	readFilePrototype("input.txt", ATTR_PERIOD);
 
 	// shortestJobFirst();
 
