@@ -22,30 +22,6 @@ typedef struct node{
 	struct node *next;
 }LIST;
 
-//first and last node of the list
-LIST *head;
-LIST *tail;
-
-//initiate the list
-void initList(){
-	head = tail = NULL;
-}
-
-//add a TASK to the node
-void add(TASK task){
-	LIST *newNode;
-	newNode = malloc(sizeof(LIST));
-	newNode -> task = task;
-	if(head == NULL){
-		head = tail = newNode;
-	}else{
-		tail -> next = newNode;
-		tail = newNode;
-		tail -> next = NULL;
-	}
-	
-}
-
 //show task
 void showTask(TASK task){
 	printf("%s\t\t%d\t\t%d\t\t%d\t\t%d\n", task.tID, task.tArrivalTime, task.tWCET, task.tPriority, task.tWaitTime);
@@ -60,9 +36,35 @@ void showList(LIST *_head){
 		conductor = conductor -> next;
 	}
 }
+//initiate the list
+// void initList(LIST *head, LIST *tail){
+// 	head = tail = NULL;
+// }
+
+//add a TASK to the node
+void add(TASK task, LIST **head, LIST **tail){
+	LIST *newNode;
+	newNode = malloc(sizeof(LIST));
+	newNode -> task = task;
+	if(*head == NULL){
+		// printf("head is null\n");
+		*head = *tail = newNode;
+		
+	}else{
+		LIST *newTail = malloc(sizeof(LIST));
+
+		newTail = *tail;
+	
+		newTail -> next = newNode;
+		newTail = newNode;
+		newTail -> next = NULL;
+		*tail = newTail;
+	}
+	// showList(head);	
+}
 
 //add a task based on a formatted buffer string
-void addTask(char * buffer){
+void addTask(char * buffer, LIST **head, LIST **tail){
 	char tID[5];
 	unsigned int tArrivalTime;
 	unsigned int tWCET;
@@ -74,7 +76,7 @@ void addTask(char * buffer){
 
 	strcpy(task.tID, tID);
 
-	add(task);
+	add(task, head, tail);
 }
 
 //ISSUE SOLVED: forget to update tail node
@@ -83,18 +85,23 @@ void addTask(char * buffer){
 //not NULL (since it's the tail, it should not have anything after it)
 //Solution was to check whether the tail -> next is NULL or not, if not tail = its next value
 //it yes, then exit the loop
-void insertIntoList(LIST *conductor, TASK task){
+void insertIntoList(LIST *conductor, TASK task, LIST **head, LIST **tail){
 	LIST *newNode;
 	newNode = malloc(sizeof(LIST));
 
-	if(conductor == head){
-		newNode -> task = head -> task;
-		head -> task = task;
-		newNode -> next = head -> next;
-		head -> next = newNode;
+	if(conductor == *head){
+		LIST *newHead = malloc(sizeof(LIST));
+		newHead = *head;
+		
+		newNode -> task = newHead -> task;
+		newHead -> task = task;
+		newNode -> next = newHead -> next;
+		newHead -> next = newNode;
+
+		*head = newHead;
 	}else{
 		LIST *previousNode;
-		previousNode = head;
+		previousNode = *head;
 		while(previousNode != NULL){
 			if(previousNode -> next == conductor){
 				newNode -> task = task;
@@ -106,8 +113,13 @@ void insertIntoList(LIST *conductor, TASK task){
 		}
 	}
 
-	while(tail-> next != NULL){
-		tail = tail -> next;
+	LIST *newTail = malloc(sizeof(LIST));
+	newTail = *tail;
+	while(newTail-> next != NULL){
+		newTail = newTail -> next;
+		if(newTail -> next == NULL){
+			*tail = newTail;
+		}
 	}
 	// printf("tail: \n");
 	// showList(tail);
@@ -117,7 +129,7 @@ void insertIntoList(LIST *conductor, TASK task){
 }
 
 //prototype for add task and sort by its designated attr
-void addTaskSortByAttr(char * buffer, int attr){
+void addTaskSortByAttr(char * buffer, int attr, LIST **head, LIST **tail){
 	char tID[5];
 	unsigned int tArrivalTime;
 	unsigned int tWCET;
@@ -130,55 +142,61 @@ void addTaskSortByAttr(char * buffer, int attr){
 
 	LIST *conductor;
 
+	// printf("current head is: ");
+	// showList(head);
+
 	//use switch case
 	switch(attr){
 		case 0:
 			printf("Case no attribute\n");
-			add(task);
+			add(task, head, tail);
 			break;
 		case 1:
-			printf("Case period attribute\n");
+			printf("Case arrival time attribute\n");
 			if(head == NULL){
-				add(task);
-				conductor = head;
+				add(task, head, tail);
+				conductor = *head;
+				printf("conductor = ");
+				showList(conductor);
+				printf("\n");
 			}else{
-				conductor = head;
+				conductor = *head;
 				while(conductor != NULL){
 					if(conductor -> task.tArrivalTime > task.tArrivalTime){
-						insertIntoList(conductor, task);
+						insertIntoList(conductor, task, head, tail);
 						break;
 					}
 					conductor = conductor -> next;
 				}
 			}
 			if(conductor == NULL){
-				add(task);
+				add(task, head, tail);
 			}
 			break;
 		case 2:
 			printf("Case WCET attribute\n");
 			if(head == NULL){
-				add(task);
-				conductor = head;
+				add(task, head, tail);
+				conductor = *head;
 			}else{
-				conductor = head;
+				conductor = *head;
 				while(conductor != NULL){
 					if(conductor -> task.tWCET > task.tWCET){
-						insertIntoList(conductor, task);
+						insertIntoList(conductor, task, head, tail);
 						break;
 					}
 					conductor = conductor -> next;
 				}
 			}
 			if(conductor == NULL){
-				add(task);
+				add(task, head, tail);
 			}
 			break;					
 	}
 }
 
 //add task and add specifically for SJF
-void addTaskSJF(char * buffer){
+void addTaskSJF(char * buffer, LIST **head, LIST **tail){
 	char tID[5];
 	unsigned int tArrivalTime;
 	unsigned int tWCET;
@@ -191,14 +209,14 @@ void addTaskSJF(char * buffer){
 
 	LIST *conductor;
 	
-	if(head == NULL){
-		add(task);
-		conductor = head;
+	if(*head == NULL){
+		add(task, head, tail);
+		conductor = *head;
 	}else{
-		conductor = head;
+		conductor = *head;
 		while(conductor != NULL){
 			if(conductor -> task.tWCET > task.tWCET){
-				insertIntoList(conductor, task);
+				insertIntoList(conductor, task, head, tail);
 				break;
 			}
 			conductor = conductor -> next;
@@ -206,7 +224,7 @@ void addTaskSJF(char * buffer){
 	}
 
 	if(conductor == NULL){
-		add(task);
+		add(task, head, tail);
 	}
 
 	// printf("conductor: \n");
@@ -218,40 +236,40 @@ void addTaskSJF(char * buffer){
 }
 
 //read the text file
-void readFile(char *filename){
+void readFile(char *filename, LIST **head, LIST **tail){
 	char buffer[225];
 	FILE *fp;
 	
 	fp = fopen(filename, "r");
 
 	while(fgets(buffer, sizeof(buffer),fp) != NULL){
-		addTask(buffer);
+		addTask(buffer, head, tail);
 	}
 
 }
 
 //file reader exclusively for SJF
-void readFileForSJF(char *filename){
+void readFileForSJF(char *filename, LIST **head, LIST **tail){
 	char buffer[225];
 	FILE *fp;
 	
 	fp = fopen(filename, "r");
 
 	while(fgets(buffer, sizeof(buffer),fp) != NULL){
-		addTaskSJF(buffer);
+		addTaskSJF(buffer, head, tail);
 	}
 
 }
 
 //prototype for read file and sort by wanted attr
-void readFilePrototype(char *filename, int attr){
+void readFilePrototype(char *filename, int attr, LIST **head, LIST **tail){
 	char buffer[225];
 	FILE *fp;
 	
 	fp = fopen(filename, "r");
 
 	while(fgets(buffer, sizeof(buffer),fp) != NULL){
-		addTaskSortByAttr(buffer, attr);
+		addTaskSortByAttr(buffer, attr, head, tail);
 	}
 
 }
@@ -265,7 +283,7 @@ void swapNodeData(LIST *node1, LIST *node2){
 
 //start Shortest Job First Scheduling (using bubble sort)
 //currently not needed
-void shortestJobFirst(){
+void shortestJobFirst(LIST *head){
 	LIST *pointer_1;
 	LIST *pointer_2;
 	
@@ -284,7 +302,7 @@ void shortestJobFirst(){
 }
 
 //calculate the wait time of each task after scheduling
-void calculateWaitTime(){
+void calculateWaitTime(LIST *head){
 	LIST *pointer_1;
 	LIST *pointer_2;
 	pointer_1 = head;
@@ -299,7 +317,7 @@ void calculateWaitTime(){
 }
 
 //average wait time
-float averageWaitTime(){
+float averageWaitTime(LIST *head){
 	LIST *conductor;
 	float count = 0;
 	float sum = 0;
@@ -335,18 +353,22 @@ void sortListByTaskName(LIST *_head){
 }
 
 //as the name suugest, turn list to nil
-void resetList(){
+void resetList(LIST *head, LIST *tail){
 	head = tail = NULL;
 }
 
 int main(){
-	readFilePrototype("input.txt", ATTR_ARRIVALTIME);
+	//first and last node of the list
+	LIST *head = NULL;
+	LIST *tail = NULL;
+
+	readFilePrototype("input.txt", ATTR_ARRIVALTIME, &head, &tail);
 
 	// shortestJobFirst();
 
-	calculateWaitTime();
+	calculateWaitTime(head);
 	
-	float avgWaitTime = averageWaitTime();
+	float avgWaitTime = averageWaitTime(head);
 
 	printf("The order of execution of the given task list is: \n");
 	printf("*NOTE: WCET = Worst Case Execution Time\n");
