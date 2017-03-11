@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 int const ATTR_NONE = 0;
 int const ATTR_ARRIVALTIME = 1;
@@ -336,7 +337,14 @@ void sortListByTaskName(LIST *_head){
 }
 
 //reset all arrival time to 0
-void shortestJobFirst(LIST *head){
+void shortestJobFirst(){
+	printf("SHORTEST JOB FIRST ALGORITHM\n");
+	
+	LIST *head = NULL;
+	LIST *tail = NULL;
+
+	readFilePrototype("input.txt", ATTR_WCET, &head, &tail);
+	
 	LIST *pointer;
 	
 	pointer = head;
@@ -345,16 +353,6 @@ void shortestJobFirst(LIST *head){
 		pointer -> task.tArrivalTime = 0;
 		pointer = pointer -> next;
 	}
-}
-
-int main(){
-	//first and last node of the list
-	LIST *head = NULL;
-	LIST *tail = NULL;
-
-	readFilePrototype("input.txt", ATTR_ARRIVALTIME, &head, &tail);
-
-	// shortestJobFirst(head);
 
 	calculateStartTime(head);
 
@@ -375,5 +373,104 @@ int main(){
 
 	sortListByTaskName(cloneOfHead);
 
+}
+
+void firstComeFirstServe(){
+	printf("FIRST COME FIRST SERVE ALGORITHM\n");
+
+	LIST *head = NULL;
+	LIST *tail = NULL;
+
+	readFilePrototype("input.txt", ATTR_ARRIVALTIME, &head, &tail);
+
+	calculateStartTime(head);
+
+	calculateWaitTime(head);
+	
+	float avgWaitTime = averageWaitTime(head);
+
+	printf("The order of execution of the given task list is: \n");
+	printf("*NOTE: WCET = Worst Case Execution Time\n");
+
+	showList(head);
+	
+	printf("Average Wait Time: %.2f\n", avgWaitTime);
+
+	LIST *cloneOfHead;
+
+	cloneOfHead = head;
+
+	sortListByTaskName(cloneOfHead);
+}
+
+//BUG TO BE FIX: FRIGGING SET ARRIVAL TIME AND START TIME OF NEW TASK
+void shortestRemainingTime(){
+	printf("SHORTEST REMAINING TIME ALGORITHM\n");
+
+	LIST *head = NULL;
+	LIST *tail = NULL;
+
+	readFilePrototype("input.txt", ATTR_ARRIVALTIME, &head, &tail);
+
+	int currenTaskRemainingTime = 0;
+
+	LIST *pointer_1;
+	LIST *pointer_2;
+
+	pointer_1 = head;
+
+	while(pointer_1 != NULL){
+		// printf(".");
+		showList(pointer_1);
+		currenTaskRemainingTime = pointer_1 -> task.tWCET - pointer_1 -> next -> task.tArrivalTime;
+
+		if(currenTaskRemainingTime <= 0){
+			pointer_1 -> next -> task.tStartTime = pointer_1 -> task.tStartTime + pointer_1 -> task.tWCET;
+			if (pointer_1 -> next -> task.tStartTime < pointer_1 -> next -> task.tArrivalTime){
+				pointer_1 -> next -> task.tStartTime = pointer_1 -> next -> task.tArrivalTime;
+			}
+		}else{
+			pointer_1 -> task.tWCET = pointer_1 -> next -> task.tArrivalTime;
+			
+			TASK newTask = {{0}, 0, currenTaskRemainingTime, pointer_1 -> task.tPriority, 0, 0};
+			strcpy(newTask.tID, pointer_1 -> task.tID);
+
+			pointer_2 = pointer_1 -> next -> next;
+			while(pointer_2 != NULL){
+				// printf("a");
+				if(pointer_2 -> task.tWCET > newTask.tWCET){
+					insertIntoList(pointer_2, newTask, &head, &tail);
+					break;
+				}
+				pointer_2 = pointer_2 -> next;
+			}
+		}
+		pointer_1 = pointer_1 -> next;
+		showList(head);
+		sleep(3);
+	}
+	printf("\n");
+
+	printf("The order of execution of the given task list is: \n");
+	printf("*NOTE: WCET = Worst Case Execution Time\n");
+
+	showList(head);
+	
+	// printf("Average Wait Time: %.2f\n", avgWaitTime);
+
+	LIST *cloneOfHead;
+
+	cloneOfHead = head;
+
+	sortListByTaskName(cloneOfHead);
+
+}
+
+int main(){
+	firstComeFirstServe();
+	printf("-------------------------------------------------------------------------------------------------------\n");
+	shortestJobFirst();
+	printf("-------------------------------------------------------------------------------------------------------\n");
+	shortestRemainingTime();
 	return 0;
 }
