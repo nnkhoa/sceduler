@@ -6,12 +6,17 @@ int const ATTR_NONE = 0;
 int const ATTR_ARRIVALTIME = 1;
 int const ATTR_WCET = 2;
 
+/*
+ *	IF YOU WANT TO PASS A LINK LIST INTO A FUNCTION, ALWAYS PASS ITS REFERENCE
+ */
+
 //defining the TASK data structure
 typedef struct{
 	char tID[5];
 	unsigned int tArrivalTime;
 	unsigned int tWCET;
 	unsigned int tPriority;
+	unsigned int tStartTime;
 	unsigned int tWaitTime;
 }TASK;
 
@@ -24,22 +29,19 @@ typedef struct node{
 
 //show task
 void showTask(TASK task){
-	printf("%s\t\t%d\t\t%d\t\t%d\t\t%d\n", task.tID, task.tArrivalTime, task.tWCET, task.tPriority, task.tWaitTime);
+	printf("%s\t\t%d\t\t\t%d\t\t%d\t\t%d\t\t%d\n", task.tID, task.tArrivalTime, task.tWCET, task.tPriority, task.tStartTime,task.tWaitTime);
 }
 
 //show the list of task
 void showList(LIST *_head){
 	LIST *conductor;
 	conductor = _head;
+	printf("Task ID\t\tTask Arrival Time\tTask WCET\tTask Priority\tTask Start Time\tTask Wait Time\n");
 	while(conductor != NULL){
 		showTask(conductor -> task);
 		conductor = conductor -> next;
 	}
 }
-//initiate the list
-// void initList(LIST *head, LIST *tail){
-// 	head = tail = NULL;
-// }
 
 //add a TASK to the node
 void add(TASK task, LIST **head, LIST **tail){
@@ -60,7 +62,6 @@ void add(TASK task, LIST **head, LIST **tail){
 		newTail -> next = NULL;
 		*tail = newTail;
 	}
-	// showList(head);	
 }
 
 //add a task based on a formatted buffer string
@@ -72,7 +73,7 @@ void addTask(char * buffer, LIST **head, LIST **tail){
 
 	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
 
-	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0};
+	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0, 0};
 
 	strcpy(task.tID, tID);
 
@@ -121,11 +122,6 @@ void insertIntoList(LIST *conductor, TASK task, LIST **head, LIST **tail){
 			*tail = newTail;
 		}
 	}
-	// printf("tail: \n");
-	// showList(tail);
-	// printf("\n");
-
-
 }
 
 //prototype for add task and sort by its designated attr
@@ -137,7 +133,7 @@ void addTaskSortByAttr(char * buffer, int attr, LIST **head, LIST **tail){
 
 	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
 
-	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0};
+	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0, 0};
 	strcpy(task.tID, tID);
 
 	LIST *conductor;
@@ -148,17 +144,12 @@ void addTaskSortByAttr(char * buffer, int attr, LIST **head, LIST **tail){
 	//use switch case
 	switch(attr){
 		case 0:
-			printf("Case no attribute\n");
 			add(task, head, tail);
 			break;
 		case 1:
-			printf("Case arrival time attribute\n");
 			if(head == NULL){
 				add(task, head, tail);
 				conductor = *head;
-				printf("conductor = ");
-				showList(conductor);
-				printf("\n");
 			}else{
 				conductor = *head;
 				while(conductor != NULL){
@@ -174,7 +165,6 @@ void addTaskSortByAttr(char * buffer, int attr, LIST **head, LIST **tail){
 			}
 			break;
 		case 2:
-			printf("Case WCET attribute\n");
 			if(head == NULL){
 				add(task, head, tail);
 				conductor = *head;
@@ -204,7 +194,7 @@ void addTaskSJF(char * buffer, LIST **head, LIST **tail){
 
 	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
 
-	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0};
+	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0, 0};
 	strcpy(task.tID, tID);
 
 	LIST *conductor;
@@ -281,20 +271,18 @@ void swapNodeData(LIST *node1, LIST *node2){
 	node2 -> task = temp;
 }
 
-//start Shortest Job First Scheduling (using bubble sort)
-//currently not needed
-void shortestJobFirst(LIST *head){
+//calculate the start time of each task (for anything that's not SJF)
+void calculateStartTime(LIST *head){
 	LIST *pointer_1;
 	LIST *pointer_2;
-	
 	pointer_1 = head;
-	
 	while(pointer_1 != NULL){
 		pointer_2 = pointer_1 -> next;
 		while(pointer_2 != NULL){
-			if(pointer_2 -> task.tWCET < pointer_1 -> task.tWCET){
-				swapNodeData(pointer_1, pointer_2);
-			}
+			pointer_2 -> task.tStartTime += pointer_1 -> task.tWCET;
+			if(pointer_2 -> task.tStartTime < pointer_2 -> task.tArrivalTime){
+				pointer_2 -> task.tStartTime = pointer_2 -> task.tArrivalTime;
+			} 
 			pointer_2 = pointer_2 -> next;
 		}
 		pointer_1 = pointer_1 -> next;
@@ -304,14 +292,9 @@ void shortestJobFirst(LIST *head){
 //calculate the wait time of each task after scheduling
 void calculateWaitTime(LIST *head){
 	LIST *pointer_1;
-	LIST *pointer_2;
 	pointer_1 = head;
 	while(pointer_1 != NULL){
-		pointer_2 = pointer_1 -> next;
-		while(pointer_2 != NULL){
-			pointer_2 -> task.tWaitTime += pointer_1 -> task.tWCET; 
-			pointer_2 = pointer_2 -> next;
-		}
+		pointer_1 -> task.tWaitTime = pointer_1 -> task.tStartTime - pointer_1 -> task.tArrivalTime;
 		pointer_1 = pointer_1 -> next;
 	}
 }
@@ -352,9 +335,16 @@ void sortListByTaskName(LIST *_head){
 	showList(_head);
 }
 
-//as the name suugest, turn list to nil
-void resetList(LIST *head, LIST *tail){
-	head = tail = NULL;
+//reset all arrival time to 0
+void shortestJobFirst(LIST *head){
+	LIST *pointer;
+	
+	pointer = head;
+	
+	while(pointer != NULL){
+		pointer -> task.tArrivalTime = 0;
+		pointer = pointer -> next;
+	}
 }
 
 int main(){
@@ -364,7 +354,9 @@ int main(){
 
 	readFilePrototype("input.txt", ATTR_ARRIVALTIME, &head, &tail);
 
-	// shortestJobFirst();
+	// shortestJobFirst(head);
+
+	calculateStartTime(head);
 
 	calculateWaitTime(head);
 	
@@ -372,7 +364,6 @@ int main(){
 
 	printf("The order of execution of the given task list is: \n");
 	printf("*NOTE: WCET = Worst Case Execution Time\n");
-	printf("Task ID\t\tTask Period\tTask WCET\tTask Priority\tTask Wait Time\n");
 
 	showList(head);
 	
