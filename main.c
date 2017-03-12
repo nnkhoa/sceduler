@@ -141,6 +141,13 @@ void addTaskSortByAttr(char * buffer, int attr, LIST **head, LIST **tail){
 					if(conductor -> task.tArrivalTime > task.tArrivalTime){
 						insertIntoList(conductor, task, head, tail);
 						break;
+					}else if(conductor -> task.tArrivalTime == task.tArrivalTime){
+						if (conductor -> task.tPriority > task.tPriority){
+							insertIntoList(conductor, task, head, tail);
+						}else{
+							insertIntoList(conductor -> next, task, head, tail);
+						}
+						break;
 					}
 					conductor = conductor -> next;
 				}
@@ -158,6 +165,13 @@ void addTaskSortByAttr(char * buffer, int attr, LIST **head, LIST **tail){
 				while(conductor != NULL){
 					if(conductor -> task.tWCET > task.tWCET){
 						insertIntoList(conductor, task, head, tail);
+						break;
+					}else if(conductor -> task.tWCET == task.tWCET){
+						if (conductor -> task.tPriority > task.tPriority){
+							insertIntoList(conductor, task, head, tail);
+						}else{
+							insertIntoList(conductor -> next, task, head, tail);
+						}
 						break;
 					}
 					conductor = conductor -> next;
