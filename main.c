@@ -238,6 +238,23 @@ float averageWaitTime(LIST *head){
 	return avgWaitTime;
 }
 
+float averageTurnAroundTime(LIST *head){
+	LIST *conductor;
+	float count = 0;
+	float sum = 0;
+	conductor = head;
+
+	while(conductor != NULL){
+		sum += conductor -> task.tWaitTime + conductor -> task.tWCET;
+		count++;
+		conductor = conductor -> next;
+	}
+
+	float avgTurnAroundTime = sum/count;
+
+	return avgTurnAroundTime;	
+}
+
 //sort and print the task list by name
 void sortListByTaskName(LIST *_head){
 	LIST *pointer_1;
@@ -255,7 +272,7 @@ void sortListByTaskName(LIST *_head){
 	}
 }
 
-void writeToFile(char *filename, LIST *head, float avgWaitTime){
+void writeToFile(char *filename, LIST *head, float avgWaitTime, float avgTurnAroundTime){
 	FILE *fp;
 	fp = fopen(filename, "w+");
 	LIST *conductor;
@@ -266,6 +283,7 @@ void writeToFile(char *filename, LIST *head, float avgWaitTime){
 		conductor = conductor -> next;
 	}
 	fprintf(fp, "Average Wait Time: %.2f\n", avgWaitTime);
+	fprintf(fp, "Average Turn Around Time: %.2f\n", avgTurnAroundTime);
 }
 
 //reset all arrival time to 0
@@ -291,6 +309,8 @@ void shortestJobFirst(){
 	
 	float avgWaitTime = averageWaitTime(head);
 
+	float avgTurnAroundTime = averageTurnAroundTime(head);
+
 	printf("The order of execution of the given task list is: \n");
 	printf("*NOTE: WCET = Worst Case Execution Time\n");
 	printf("*NOTE: Shortest Job First in the case of every tasks arrive at the same time, hence Start Time = Wait Time\n");
@@ -299,13 +319,15 @@ void shortestJobFirst(){
 	
 	printf("Average Wait Time: %.2f\n", avgWaitTime);
 
+	printf("Average Turn Around Time: %.2f\n", avgTurnAroundTime);
+
 	LIST *cloneOfHead;
 
 	cloneOfHead = head;
 
 	sortListByTaskName(cloneOfHead);
 
-	writeToFile("shortestJobFirstResult.txt", cloneOfHead, avgWaitTime);
+	writeToFile("shortestJobFirstResult.txt", cloneOfHead, avgWaitTime, avgTurnAroundTime);
 }
 
 void firstComeFirstServe(){
@@ -319,6 +341,8 @@ void firstComeFirstServe(){
 	calculateStartTime(head);
 
 	calculateWaitTime(head);
+
+	float avgTurnAroundTime = averageTurnAroundTime(head);
 	
 	float avgWaitTime = averageWaitTime(head);
 
@@ -328,6 +352,7 @@ void firstComeFirstServe(){
 	showList(head);
 	
 	printf("Average Wait Time: %.2f\n", avgWaitTime);
+	printf("Average Turn Around Time: %.2f\n", avgTurnAroundTime);
 
 	LIST *cloneOfHead;
 
@@ -335,7 +360,7 @@ void firstComeFirstServe(){
 
 	sortListByTaskName(cloneOfHead);
 
-	writeToFile("firstComeFirstServeResult.txt", cloneOfHead, avgWaitTime);
+	writeToFile("firstComeFirstServeResult.txt", cloneOfHead, avgWaitTime, avgTurnAroundTime);
 }
 
 
