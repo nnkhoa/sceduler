@@ -65,22 +65,6 @@ void add(TASK task, LIST **head, LIST **tail){
 	}
 }
 
-//add a task based on a formatted buffer string
-void addTask(char * buffer, LIST **head, LIST **tail){
-	char tID[5];
-	unsigned int tArrivalTime;
-	unsigned int tWCET;
-	unsigned int tPriority;
-
-	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
-
-	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0, 0};
-
-	strcpy(task.tID, tID);
-
-	add(task, head, tail);
-}
-
 //ISSUE SOLVED: forget to update tail node
 //basically, when I insert new node somewhere in the list and not at the end,
 //the tail node doesnt get updated and the tail -> next point to somewhere that's
@@ -186,74 +170,8 @@ void addTaskSortByAttr(char * buffer, int attr, LIST **head, LIST **tail){
 	}
 }
 
-//add task and add specifically for SJF
-void addTaskSJF(char * buffer, LIST **head, LIST **tail){
-	char tID[5];
-	unsigned int tArrivalTime;
-	unsigned int tWCET;
-	unsigned int tPriority;
-
-	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
-
-	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0, 0};
-	strcpy(task.tID, tID);
-
-	LIST *conductor;
-	
-	if(*head == NULL){
-		add(task, head, tail);
-		conductor = *head;
-	}else{
-		conductor = *head;
-		while(conductor != NULL){
-			if(conductor -> task.tWCET > task.tWCET){
-				insertIntoList(conductor, task, head, tail);
-				break;
-			}
-			conductor = conductor -> next;
-		}
-	}
-
-	if(conductor == NULL){
-		add(task, head, tail);
-	}
-
-	// printf("conductor: \n");
-	// showList(conductor);
-
-	// printf("head: \n");
-	// showList(head);
-	// printf("\n");
-}
-
-//read the text file
-void readFile(char *filename, LIST **head, LIST **tail){
-	char buffer[225];
-	FILE *fp;
-	
-	fp = fopen(filename, "r");
-
-	while(fgets(buffer, sizeof(buffer),fp) != NULL){
-		addTask(buffer, head, tail);
-	}
-
-}
-
-//file reader exclusively for SJF
-void readFileForSJF(char *filename, LIST **head, LIST **tail){
-	char buffer[225];
-	FILE *fp;
-	
-	fp = fopen(filename, "r");
-
-	while(fgets(buffer, sizeof(buffer),fp) != NULL){
-		addTaskSJF(buffer, head, tail);
-	}
-
-}
-
 //prototype for read file and sort by wanted attr
-void readFilePrototype(char *filename, int attr, LIST **head, LIST **tail){
+void readFile(char *filename, int attr, LIST **head, LIST **tail){
 	char buffer[225];
 	FILE *fp;
 	
@@ -262,6 +180,8 @@ void readFilePrototype(char *filename, int attr, LIST **head, LIST **tail){
 	while(fgets(buffer, sizeof(buffer),fp) != NULL){
 		addTaskSortByAttr(buffer, attr, head, tail);
 	}
+
+	fclose(fp);
 
 }
 
@@ -280,7 +200,7 @@ void calculateStartTime(LIST *head){
 	while(pointer_1 != NULL){
 		pointer_2 = pointer_1 -> next;
 		while(pointer_2 != NULL){
-			pointer_2 -> task.tStartTime += pointer_1 -> task.tWCET;
+			pointer_2 -> task.tStartTime = pointer_1 -> task.tWCET + pointer_1 -> task.tStartTime;
 			if(pointer_2 -> task.tStartTime < pointer_2 -> task.tArrivalTime){
 				pointer_2 -> task.tStartTime = pointer_2 -> task.tArrivalTime;
 			} 
@@ -333,7 +253,19 @@ void sortListByTaskName(LIST *_head){
 		}
 		pointer_1 = pointer_1 -> next;
 	}
-	showList(_head);
+}
+
+void writeToFile(char *filename, LIST *head, float avgWaitTime){
+	FILE *fp;
+	fp = fopen(filename, "w+");
+	LIST *conductor;
+	conductor = head;
+	fprintf(fp,"Task ID\t\tTask Arrival Time\tTask WCET\tTask Priority\tTask Start Time\tTask Wait Time\n");
+	while(conductor != NULL){
+		fprintf(fp,"%s\t\t%d\t\t\t%d\t\t%d\t\t%d\t\t%d\n", conductor->task.tID, conductor->task.tArrivalTime, conductor->task.tWCET, conductor->task.tPriority, conductor->task.tStartTime, conductor->task.tWaitTime);
+		conductor = conductor -> next;
+	}
+	fprintf(fp, "Average Wait Time: %.2f\n", avgWaitTime);
 }
 
 //reset all arrival time to 0
@@ -342,8 +274,7 @@ void shortestJobFirst(){
 	
 	LIST *head = NULL;
 	LIST *tail = NULL;
-
-	readFilePrototype("input.txt", ATTR_WCET, &head, &tail);
+	readFile("input.txt", ATTR_WCET, &head, &tail);
 	
 	LIST *pointer;
 	
@@ -362,6 +293,7 @@ void shortestJobFirst(){
 
 	printf("The order of execution of the given task list is: \n");
 	printf("*NOTE: WCET = Worst Case Execution Time\n");
+	printf("*NOTE: Shortest Job First in the case of every tasks arrive at the same time, hence Start Time = Wait Time\n");
 
 	showList(head);
 	
@@ -373,6 +305,7 @@ void shortestJobFirst(){
 
 	sortListByTaskName(cloneOfHead);
 
+	writeToFile("shortestJobFirstResult.txt", cloneOfHead, avgWaitTime);
 }
 
 void firstComeFirstServe(){
@@ -381,7 +314,7 @@ void firstComeFirstServe(){
 	LIST *head = NULL;
 	LIST *tail = NULL;
 
-	readFilePrototype("input.txt", ATTR_ARRIVALTIME, &head, &tail);
+	readFile("input.txt", ATTR_ARRIVALTIME, &head, &tail);
 
 	calculateStartTime(head);
 
@@ -401,76 +334,15 @@ void firstComeFirstServe(){
 	cloneOfHead = head;
 
 	sortListByTaskName(cloneOfHead);
+
+	writeToFile("firstComeFirstServeResult.txt", cloneOfHead, avgWaitTime);
 }
 
-//BUG TO BE FIX: FRIGGING SET ARRIVAL TIME AND START TIME OF NEW TASK
-void shortestRemainingTime(){
-	printf("SHORTEST REMAINING TIME ALGORITHM\n");
 
-	LIST *head = NULL;
-	LIST *tail = NULL;
-
-	readFilePrototype("input.txt", ATTR_ARRIVALTIME, &head, &tail);
-
-	int currenTaskRemainingTime = 0;
-
-	LIST *pointer_1;
-	LIST *pointer_2;
-
-	pointer_1 = head;
-
-	while(pointer_1 != NULL){
-		// printf(".");
-		showList(pointer_1);
-		currenTaskRemainingTime = pointer_1 -> task.tWCET - pointer_1 -> next -> task.tArrivalTime;
-
-		if(currenTaskRemainingTime <= 0){
-			pointer_1 -> next -> task.tStartTime = pointer_1 -> task.tStartTime + pointer_1 -> task.tWCET;
-			if (pointer_1 -> next -> task.tStartTime < pointer_1 -> next -> task.tArrivalTime){
-				pointer_1 -> next -> task.tStartTime = pointer_1 -> next -> task.tArrivalTime;
-			}
-		}else{
-			pointer_1 -> task.tWCET = pointer_1 -> next -> task.tArrivalTime;
-			
-			TASK newTask = {{0}, 0, currenTaskRemainingTime, pointer_1 -> task.tPriority, 0, 0};
-			strcpy(newTask.tID, pointer_1 -> task.tID);
-
-			pointer_2 = pointer_1 -> next -> next;
-			while(pointer_2 != NULL){
-				// printf("a");
-				if(pointer_2 -> task.tWCET > newTask.tWCET){
-					insertIntoList(pointer_2, newTask, &head, &tail);
-					break;
-				}
-				pointer_2 = pointer_2 -> next;
-			}
-		}
-		pointer_1 = pointer_1 -> next;
-		showList(head);
-		sleep(3);
-	}
-	printf("\n");
-
-	printf("The order of execution of the given task list is: \n");
-	printf("*NOTE: WCET = Worst Case Execution Time\n");
-
-	showList(head);
-	
-	// printf("Average Wait Time: %.2f\n", avgWaitTime);
-
-	LIST *cloneOfHead;
-
-	cloneOfHead = head;
-
-	sortListByTaskName(cloneOfHead);
-
-}
 
 int main(){
 	firstComeFirstServe();
 	printf("-------------------------------------------------------------------------------------------------------\n");
 	shortestJobFirst();
-	printf("-------------------------------------------------------------------------------------------------------\n");
-	shortestRemainingTime();
 	return 0;
 }
