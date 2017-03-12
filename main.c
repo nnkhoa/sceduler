@@ -300,7 +300,7 @@ void writeToFile(char *filename, LIST *head, float avgWaitTime, float avgTurnAro
 	fprintf(fp, "Average Turn Around Time: %.2f\n", avgTurnAroundTime);
 }
 
-//reset all arrival time to 0
+//In this case, I only consider the case where all tasks arrive at the same time
 void shortestJobFirst(){
 	printf("SHORTEST JOB FIRST ALGORITHM\n");
 	
@@ -380,8 +380,10 @@ void firstComeFirstServe(){
 
 
 int main(){
+	printf("\nTHE CASE STUDY: Read the lists of task from a given file and attempt to use scheduling algorithms\n");
+	printf("\n-------------------------------------------------------------------------------------------------------\n\n");
 	firstComeFirstServe();
-	printf("-------------------------------------------------------------------------------------------------------\n");
+	printf("\n-------------------------------------------------------------------------------------------------------\n\n");
 	shortestJobFirst();
 	return 0;
 }
