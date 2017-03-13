@@ -19,6 +19,7 @@ typedef struct{
 	unsigned int tPriority;
 	unsigned int tStartTime;
 	unsigned int tWaitTime;
+	unsigned int tEndTime;
 }TASK;
 
 //defining the linked list 
@@ -30,14 +31,14 @@ typedef struct node{
 
 //show task
 void showTask(TASK task){
-	printf("%s\t\t%d\t\t\t%d\t\t%d\t\t%d\t\t%d\n", task.tID, task.tArrivalTime, task.tWCET, task.tPriority, task.tStartTime,task.tWaitTime);
+	printf("%s\t\t%d\t\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", task.tID, task.tArrivalTime, task.tWCET, task.tPriority, task.tStartTime,task.tWaitTime, task.tEndTime);
 }
 
 //show the list of task
 void showList(LIST *_head){
 	LIST *conductor;
 	conductor = _head;
-	printf("Task ID\t\tTask Arrival Time\tTask WCET\tTask Priority\tTask Start Time\tTask Wait Time\n");
+	printf("Task ID\t\tTask Arrival Time\tTask WCET\tTask Priority\tTask Start Time\tTask Wait Time\tTask End Time\n");
 	while(conductor != NULL){
 		showTask(conductor -> task);
 		conductor = conductor -> next;
@@ -118,7 +119,7 @@ void addTaskSortByAttr(char * buffer, int attr, LIST **head, LIST **tail){
 
 	sscanf(buffer, "%s %d %d %d", tID, &tArrivalTime, &tWCET, &tPriority);
 
-	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0, 0};
+	TASK task = {{0}, tArrivalTime, tWCET, tPriority, 0, 0, 0};
 	strcpy(task.tID, tID);
 
 	LIST *conductor;
@@ -224,6 +225,15 @@ void calculateStartTime(LIST *head){
 	}
 }
 
+void calculateEndTime(LIST *head){
+	LIST *pointer_1;
+	pointer_1 = head;
+	while(pointer_1 != NULL){
+		pointer_1 -> task.tEndTime = pointer_1 -> task.tStartTime + pointer_1 -> task.tWCET;
+		pointer_1 = pointer_1 -> next;
+	}
+}
+
 //calculate the wait time of each task after scheduling
 void calculateWaitTime(LIST *head){
 	LIST *pointer_1;
@@ -320,6 +330,8 @@ void shortestJobFirst(){
 	calculateStartTime(head);
 
 	calculateWaitTime(head);
+
+	calculateEndTime(head);
 	
 	float avgWaitTime = averageWaitTime(head);
 
@@ -355,6 +367,8 @@ void firstComeFirstServe(){
 	calculateStartTime(head);
 
 	calculateWaitTime(head);
+
+	calculateEndTime(head);
 
 	float avgTurnAroundTime = averageTurnAroundTime(head);
 	
