@@ -48,14 +48,14 @@ void showList(LIST *_head){
 //add a TASK to the node
 void add(TASK task, LIST **head, LIST **tail){
 	LIST *newNode;
-	newNode = malloc(sizeof(LIST));
+	newNode = calloc(1, sizeof(LIST));
 	newNode -> task = task;
 	if(*head == NULL){
 		// printf("head is null\n");
 		*head = *tail = newNode;
 		
 	}else{
-		LIST *newTail = malloc(sizeof(LIST));
+		LIST *newTail = calloc(1, sizeof(LIST));
 
 		newTail = *tail;
 	
@@ -74,10 +74,10 @@ void add(TASK task, LIST **head, LIST **tail){
 //it yes, then exit the loop
 void insertIntoList(LIST *conductor, TASK task, LIST **head, LIST **tail){
 	LIST *newNode;
-	newNode = malloc(sizeof(LIST));
+	newNode = calloc(1, sizeof(LIST));
 
 	if(conductor == *head){
-		LIST *newHead = malloc(sizeof(LIST));
+		LIST *newHead = calloc(1, sizeof(LIST));
 		newHead = *head;
 		
 		newNode -> task = newHead -> task;
@@ -100,7 +100,7 @@ void insertIntoList(LIST *conductor, TASK task, LIST **head, LIST **tail){
 		}
 	}
 
-	LIST *newTail = malloc(sizeof(LIST));
+	LIST *newTail;
 	newTail = *tail;
 	while(newTail-> next != NULL){
 		newTail = newTail -> next;
